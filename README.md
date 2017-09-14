@@ -33,7 +33,7 @@ Vue.component('my-component', {
 暂时没有参数，自动对<scrollbar>的父级的大小进行是否展示滚动条
 ``` bash
 <scrollbar>
-  <div></div>
+  <div>HTML</div>
 </scrollbar>
 ```
 
