@@ -30,11 +30,26 @@ Vue.component('my-component', {
 ```
 
 ## Usage
-暂时没有参数，自动对<scrollbar>的父级的大小进行是否展示滚动条
-``` bash
+  
+``` html
 <scrollbar>
   <div>HTML</div>
 </scrollbar>
+```
+  
+## Events
+
+#### The callback function at the border
+
+| Event         | Output     | Description                                    |
+|---------------|------------|------------------------------------------------|
+| top           |            | When the scroll bar is on the topmost side     |
+| bottom        |            | When the scroll bar is on the bottommost side  |
+| left          |            | When the scroll bar is on the leftmost side    |
+| right         |            | When the scroll bar is on the rightmost side   |
+
+``` html
+<datepicker @top="top" @bottom="bottom" @left="left" @right="right"></datepicker>
 ```
 
 For detailed explanation on how things work, checkout the [guide](http://vuejs-templates.github.io/webpack/) and [docs for vue-loader](http://vuejs.github.io/vue-loader).
