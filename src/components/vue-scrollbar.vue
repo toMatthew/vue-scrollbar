@@ -79,39 +79,38 @@ export default {
     },
     methods:{
         // 滚动
-       scroll:function(e){
-            var self = this;
-            if(self.isVerticalBtn  || self.isHorizontalBtn) {
+       scroll(e){
+            if(this.isVerticalBtn  || this.isHorizontalBtn) {
                 e.preventDefault();
                 e.stopPropagation();
             } else {
                 return false;
             }          
-            var speed = self.speed;
+            var speed = this.speed;
             var shifted = e.shiftKey
             var scrollY = e.deltaY > 0 ? speed*1 : speed * -1;
             // var scrollX = e.deltaX > 0 ? speed : speed * -1;
             // Fix Mozilla Shifted Wheel~
             if(shifted && e.deltaX == 0) scrollX = e.deltaY > 0 ? speed : speed * -1;
-            var nextY = self.top*1 + scrollY;
-            var nextX = self.left*1 + scrollY;
+            var nextY = this.top*1 + scrollY;
+            var nextX = this.left*1 + scrollY;
 
             // 如果没有垂直的滚动条就滚动横向的
-            if(self.isVerticalBtn) {
-                self.setVerticalScroll(nextY)
-            } else if(self.isHorizontalBtn){
-                self.setHorizontalScroll(nextX)
+            if(this.isVerticalBtn) {
+                this.setVerticalScroll(nextY)
+            } else if(this.isHorizontalBtn){
+                this.setHorizontalScroll(nextX)
             }
             
         },
         // 垂直btn点击后的事件
-        startmoveV: function(e) {
+        startmoveV(e) {
             e.preventDefault();//阻止默认事件，取消文字选中
             var self = this;
-            self.isStartmoveV = true;
-            var point = self.windowToBox(e.clientX , e.clientY, self.$refs.verticalBtn);//得出来的是相对这垂直btn的点位置
-            self.point.x = point.x;
-            self.point.y = point.y;
+            this.isStartmoveV = true;
+            var point = this.windowToBox(e.clientX , e.clientY, this.$refs.verticalBtn);//得出来的是相对这垂直btn的点位置
+            this.point.x = point.x;
+            this.point.y = point.y;
             if(!e){
                 e = window.event;
                 //防止IE文字选中
@@ -139,13 +138,13 @@ export default {
             }
         },
         // 点击横向滚动条拖拽滚动
-        startmoveH : function (e) {
+        startmoveH (e) {
             e.preventDefault();//阻止默认事件，取消文字选中
             var self = this;
-            self.isStartmoveH = true;
-            var point = this.windowToBox(e.clientX , e.clientY, self.$refs.horizontalBtn);
-            self.point.x = point.x;
-            self.point.y = point.y;
+            this.isStartmoveH = true;
+            var point = this.windowToBox(e.clientX , e.clientY, this.$refs.horizontalBtn);
+            this.point.x = point.x;
+            this.point.y = point.y;
             if(!e){
                 e = window.event;
                 //防止IE文字选中
@@ -172,11 +171,11 @@ export default {
                 document.onmousemove = null;
             }
         },
-        windowToBox : function(x, y, el) {
+        windowToBox(x, y, el) {
             var bbox = el.getBoundingClientRect();///canvas的包围盒的信息
             return {x:x-bbox.left , y:y-bbox.top}
         },
-        getSize: function(){            
+        getSize(){            
             var container = this.$refs.container;
             var box = this.$refs.box;
 
@@ -192,106 +191,101 @@ export default {
             return size;
         },
         setVerticalClick(val) {//点击拖拽设置
-            var self = this;
-            var size = self.getSize();
-            var barTop = ((val - self.boxPoint.minY)  / this.$refs.box.clientHeight ) *100;
+            var size = this.getSize();
+            var barTop = ((val - this.boxPoint.minY)  / this.$refs.box.clientHeight ) *100;
             if(barTop < 0) {
                 barTop = 0;
-                if(self.barTop == barTop) {
+                if(this.barTop == barTop) {
                     return false;
                 }
-                self.$emit('top');
+                this.$emit('top');
             }
-            if(barTop + self.barHeight > 100) {
-                barTop = 100 - self.barHeight;
-                if(self.barTop == barTop) {
+            if(barTop + this.barHeight > 100) {
+                barTop = 100 - this.barHeight;
+                if(this.barTop == barTop) {
                     return false;
                 }
-                self.$emit('bottom');
+                this.$emit('bottom');
             }
-            self.barTop = barTop.toFixed(2); //这里是百分比的需要转换
-            self.top = ((barTop / 100) * size.containerHeight).toFixed(2) * 1;
+            this.barTop = barTop.toFixed(2); //这里是百分比的需要转换
+            this.top = ((barTop / 100) * size.containerHeight).toFixed(2) * 1;
         },
         setVerticalScroll(val){//val是偏移量 滚动的 
-            var self = this;
-            var size = self.getSize();
+            var size = this.getSize();
             let topEnd = size.containerHeight - size.boxHeight;
             if(val > topEnd){
                 val = topEnd;
-                if(self.top == val) {//已经到底部就不用继续执行了
+                if(this.top == val) {//已经到底部就不用继续执行了
                     return false;
                 }
-                self.$emit('bottom');
+                this.$emit('bottom');
             };
             if(val < 0) {
                 val = 0;
-                if(self.top == val) {//已经到顶部就不用继续执行了
+                if(this.top == val) {//已经到顶部就不用继续执行了
                     return false;
                 }
-                self.$emit('top');
+                this.$emit('top');
             }
-            self.top = val;
+            this.top = val;
             // 导航条的top的计算 
-            self.barTop = (val / size.containerHeight)*100;//(val / size.boxHeight)*100 > (100 - self.barHeight) ? (100 - self.barHeight) : (val / size.boxHeight)*100;
+            this.barTop = (val / size.containerHeight)*100;//(val / size.boxHeight)*100 > (100 - self.barHeight) ? (100 - self.barHeight) : (val / size.boxHeight)*100;
         },
         setHorizontalClick(val) {
-            var self = this;
-            var size = self.getSize();
-            var barLeft = ((val - self.boxPoint.minX)  / this.$refs.box.clientWidth ) *100;
+            var size = this.getSize();
+            var barLeft = ((val - this.boxPoint.minX)  / this.$refs.box.clientWidth ) *100;
             if(barLeft < 0) {
                 barLeft = 0;
-                if(self.barLeft == barLeft) {
+                if(this.barLeft == barLeft) {
                     return false;
                 }
-                self.$emit('left');
+                this.$emit('left');
             }
-            if(barLeft + self.barWidth > 100) {
-                barLeft = 100 - self.barWidth;
-                if(self.barLeft == barLeft) {
+            if(barLeft + this.barWidth > 100) {
+                barLeft = 100 - this.barWidth;
+                if(this.barLeft == barLeft) {
                     return false;
                 }
-                self.$emit('right');
+                this.$emit('right');
             }
-            self.barLeft = barLeft.toFixed(2); //这里是百分比的需要转换
-            self.left = ((barLeft / 100) * size.containerWidth).toFixed(2) * 1;
+            this.barLeft = barLeft.toFixed(2); //这里是百分比的需要转换
+            this.left = ((barLeft / 100) * size.containerWidth).toFixed(2) * 1;
         },
         setHorizontalScroll(val){
-            var self = this;
-            var size = self.getSize();
+            var size = this.getSize();
             let leftEnd = size.containerWidth - size.boxWidth;
             if(val > leftEnd){
-                self.$emit('right');
+                this.$emit('right');
                 val = leftEnd;
             };
             if(val < 0) {
-                self.$emit('left');
+                this.$emit('left');
                 val = 0;
             }
-            self.left = val;
-            self.barLeft = (val / size.containerWidth)*100;//(val / size.boxWidth)*100 > (100 - self.barWidth) ? (100 - self.barWidth) : (val / size.boxWidth)*100;
+            this.left = val;
+            this.barLeft = (val / size.containerWidth)*100;//(val / size.boxWidth)*100 > (100 - self.barWidth) ? (100 - self.barWidth) : (val / size.boxWidth)*100;
         },
         changeWinSize(){
-            var self = this;
-            var size = self.getSize();
-            var boxPoint = self.$refs.box.getBoundingClientRect();//container的极坐标
+            var size = this.getSize();
+            var boxPoint = this.$refs.box.getBoundingClientRect();//container的极坐标
             // 保存极坐标
-            self.boxPoint.minX = boxPoint.left;
-            self.boxPoint.maxX = boxPoint.right;
-            self.boxPoint.minY = boxPoint.top;
-            self.boxPoint.maxY = boxPoint.bottom;
+            this.boxPoint.minX = boxPoint.left;
+            this.boxPoint.maxX = boxPoint.right;
+            this.boxPoint.minY = boxPoint.top;
+            this.boxPoint.maxY = boxPoint.bottom;
             // 计算拖拽条的宽高
-            self.barHeight = (size.boxHeight / size.containerHeight) * 100;
-            self.barWidth = (size.boxWidth / size.containerWidth) * 100;
+            this.barHeight = (size.boxHeight / size.containerHeight) * 100;
+            this.barWidth = (size.boxWidth / size.containerWidth) * 100;
             // 是否显示拖拽条
-            self.isVerticalBtn = (self.barHeight >= 100 && !!self.barHeight)  ? false : true;
-            self.isHorizontalBtn = (self.barWidth >= 100 && !!self.barWidth) ? false : true;
-            if(!self.isVerticalBtn) {
-                self.top = 0;
-                self.barTop = 0;
+            this.isVerticalBtn = (this.barHeight >= 100 && !!this.barHeight)  ? false : true;
+            this.isHorizontalBtn = (this.barWidth >= 100 && !!this.barWidth) ? false : true;
+            if(!this.isVerticalBtn) {
+                this.top = 0;
+                this.barTop = 0;
             } 
-            if(!self.isHorizontalBtn) {
-                self.left = 0;
-                self.barLeft = 0;
+            if(!this.isHorizontalBtn) {
+                this.left = 0;
+                this.barLeft = 0;
             }
         }
     },
