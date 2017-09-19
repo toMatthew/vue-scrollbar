@@ -43,10 +43,10 @@ Vue.component('my-component', {
 
 | Event         | Output     | Description                                    |
 |---------------|------------|------------------------------------------------|
-| top           |            | When the scroll bar is on the topmost side     |
-| bottom        |            | When the scroll bar is on the bottommost side  |
-| left          |            | When the scroll bar is on the leftmost side    |
-| right         |            | When the scroll bar is on the rightmost side   |
+| top           | Function   | When the scroll bar is on the topmost side     |
+| bottom        | Function   | When the scroll bar is on the bottommost side  |
+| left          | Function   | When the scroll bar is on the leftmost side    |
+| right         | Function   | When the scroll bar is on the rightmost side   |
 
 ``` html
 <datepicker @top="top" @bottom="bottom" @left="left" @right="right"></datepicker>
