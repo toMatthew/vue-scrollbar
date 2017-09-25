@@ -86,14 +86,14 @@ export default {
             } else {
                 return false;
             }          
-            var speed = this.speed;
-            var shifted = e.shiftKey
-            var scrollY = e.deltaY > 0 ? speed*1 : speed * -1;
-            // var scrollX = e.deltaX > 0 ? speed : speed * -1;
+            let speed = this.speed;
+            let shifted = e.shiftKey
+            let scrollY = e.deltaY > 0 ? speed*1 : speed * -1;
+            // let scrollX = e.deltaX > 0 ? speed : speed * -1;
             // Fix Mozilla Shifted Wheel~
             if(shifted && e.deltaX == 0) scrollX = e.deltaY > 0 ? speed : speed * -1;
-            var nextY = this.top*1 + scrollY;
-            var nextX = this.left*1 + scrollY;
+            let nextY = this.top*1 + scrollY;
+            let nextX = this.left*1 + scrollY;
 
             // 如果没有垂直的滚动条就滚动横向的
             if(this.isVerticalBtn) {
@@ -101,98 +101,84 @@ export default {
             } else if(this.isHorizontalBtn){
                 this.setHorizontalScroll(nextX)
             }
-            
         },
         // 垂直btn点击后的事件
         startmoveV(e) {
             e.preventDefault();//阻止默认事件，取消文字选中
-            var self = this;
-            this.isStartmoveV = true;
-            var point = this.windowToBox(e.clientX , e.clientY, this.$refs.verticalBtn);//得出来的是相对这垂直btn的点位置
-            this.point.x = point.x;
-            this.point.y = point.y;
-            if(!e){
-                e = window.event;
-                //防止IE文字选中
-                self.$refs.box.onselectstart = function(){
-                    return false;
-                }  
-            }
+            let _point = this.windowToBox(e.clientX , e.clientY, this.$refs.verticalBtn);//得出来的是相对这垂直btn的点位置
+            this.isStartmoveV = true;            
+            this.point.x = _point.x;
+            this.point.y = _point.y;
 
-            document.onmousemove = function (e) {
-                e.preventDefault();
-                if(self.isStartmoveV) {
-                    self.setVerticalClick(e.clientY - self.point.y);
-                }
-            }
-
-            document.onmouseup = function (e) {
-                e.preventDefault();
-                self.isStartmoveV = false;
-                clear();
-            }
-
-            var clear = function () {
-                document.onmouseup = null;
-                document.onmousemove = null;
-            }
+            document.addEventListener('mousemove', this.fnMousemoveV, false);
+            document.addEventListener('mouseup', this.fnMouseup, false);
         },
         // 点击横向滚动条拖拽滚动
         startmoveH (e) {
             e.preventDefault();//阻止默认事件，取消文字选中
-            var self = this;
+            let _point = this.windowToBox(e.clientX , e.clientY, this.$refs.horizontalBtn);
             this.isStartmoveH = true;
-            var point = this.windowToBox(e.clientX , e.clientY, this.$refs.horizontalBtn);
-            this.point.x = point.x;
-            this.point.y = point.y;
-            if(!e){
-                e = window.event;
-                //防止IE文字选中
-                self.$refs.box.onselectstart = function(){
-                    return false;
-                }  
-            }
+            this.point.x = _point.x;
+            this.point.y = _point.y;
 
-            document.onmousemove = function (e) {
-                e.preventDefault();
-                if(self.isStartmoveH) {
-                    self.setHorizontalClick(e.clientX - self.point.x);
-                }
-            }
-
-            document.onmouseup = function (e) {
-                e.preventDefault();
-                self.isStartmoveH = false;
-                clear();
-            }
-
-            var clear = function () {
-                document.onmouseup = null;
-                document.onmousemove = null;
+            document.addEventListener('mousemove', this.fnMousemoveH, false);
+            document.addEventListener('mouseup', this.fnMouseup, false);
+        },
+        // 垂直移动监听
+        fnMousemoveV(e) {
+            e.preventDefault();
+            if(this.isStartmoveV) {
+                this.setVerticalClick(e.clientY - this.point.y);
             }
         },
+        // 横向移动监听
+        fnMousemoveH(e) {
+            e.preventDefault();
+            if(this.isStartmoveH) {
+                this.setHorizontalClick(e.clientX - this.point.x);
+            }
+        },
+        // 鼠标抬起监听
+        fnMouseup(e) {
+            e.preventDefault();
+            this.isStartmoveH = false;
+            this.isStartmoveV = false;
+            this.clearMousemove();
+
+        },
+        // 清除监听
+        clearMousemove() {
+            document.removeEventListener('mousemove', this.fnMousemoveV, false);
+            document.removeEventListener('mousemove', this.fnMousemoveH, false);
+            document.removeEventListener('mouseup', this.fnMouseup, false);
+        },
+        // 包围盒的信息坐标轴
         windowToBox(x, y, el) {
-            var bbox = el.getBoundingClientRect();///canvas的包围盒的信息
-            return {x:x-bbox.left , y:y-bbox.top}
+            let _bbox = el.getBoundingClientRect();
+            return {
+                x: x - _bbox.left ,
+                y: y - _bbox.top
+            }
         },
+        // 返回盒子尺寸
         getSize(){            
-            var container = this.$refs.container;
-            var box = this.$refs.box;
-
-            var size = {
-                //滚动内容的高度宽度
+            let container = this.$refs.container;
+            let box = this.$refs.box;
+            let size = {
+                // 滚动内容的高度宽度
                 containerHeight: container.children[0].clientHeight,
                 containerWidth: container.children[0].clientWidth,
-                //最外面盒子的高度宽度
+                // 最外面盒子的高度宽度
                 boxHeight: box.clientHeight,
                 boxWidth: box.clientWidth,
             }
             
             return size;
         },
-        setVerticalClick(val) {//点击拖拽设置
-            var size = this.getSize();
-            var barTop = ((val - this.boxPoint.minY)  / this.$refs.box.clientHeight ) *100;
+        // 点击拖拽设置
+        setVerticalClick(val) {
+            let size = this.getSize();
+            let barTop = ((val - this.boxPoint.minY)  / this.$refs.box.clientHeight ) *100;
             if(barTop < 0) {
                 barTop = 0;
                 if(this.barTop == barTop) {
@@ -207,33 +193,35 @@ export default {
                 }
                 this.$emit('bottom');
             }
-            this.barTop = barTop.toFixed(2); //这里是百分比的需要转换
+            this.barTop = barTop.toFixed(2); // 这里是百分比的需要转换
             this.top = ((barTop / 100) * size.containerHeight).toFixed(2) * 1;
         },
-        setVerticalScroll(val){//val是偏移量 滚动的 
-            var size = this.getSize();
+        // val是偏移量 滚动的 
+        setVerticalScroll(val){
+            let size = this.getSize();
             let topEnd = size.containerHeight - size.boxHeight;
             if(val > topEnd){
                 val = topEnd;
-                if(this.top == val) {//已经到底部就不用继续执行了
+                if(this.top == val) {// 已经到底部就不用继续执行了
                     return false;
                 }
                 this.$emit('bottom');
             };
             if(val < 0) {
                 val = 0;
-                if(this.top == val) {//已经到顶部就不用继续执行了
+                if(this.top == val) {// 已经到顶部就不用继续执行了
                     return false;
                 }
                 this.$emit('top');
             }
             this.top = val;
             // 导航条的top的计算 
-            this.barTop = (val / size.containerHeight)*100;//(val / size.boxHeight)*100 > (100 - self.barHeight) ? (100 - self.barHeight) : (val / size.boxHeight)*100;
+            this.barTop = (val / size.containerHeight)*100;
+            // (val / size.boxHeight)*100 > (100 - self.barHeight) ? (100 - self.barHeight) : (val / size.boxHeight)*100;
         },
         setHorizontalClick(val) {
-            var size = this.getSize();
-            var barLeft = ((val - this.boxPoint.minX)  / this.$refs.box.clientWidth ) *100;
+            let size = this.getSize();
+            let barLeft = ((val - this.boxPoint.minX)  / this.$refs.box.clientWidth ) *100;
             if(barLeft < 0) {
                 barLeft = 0;
                 if(this.barLeft == barLeft) {
@@ -248,11 +236,12 @@ export default {
                 }
                 this.$emit('right');
             }
-            this.barLeft = barLeft.toFixed(2); //这里是百分比的需要转换
+            this.barLeft = barLeft.toFixed(2); 
+            // 这里是百分比的需要转换
             this.left = ((barLeft / 100) * size.containerWidth).toFixed(2) * 1;
         },
         setHorizontalScroll(val){
-            var size = this.getSize();
+            let size = this.getSize();
             let leftEnd = size.containerWidth - size.boxWidth;
             if(val > leftEnd){
                 this.$emit('right');
@@ -263,11 +252,13 @@ export default {
                 val = 0;
             }
             this.left = val;
-            this.barLeft = (val / size.containerWidth)*100;//(val / size.boxWidth)*100 > (100 - self.barWidth) ? (100 - self.barWidth) : (val / size.boxWidth)*100;
+            this.barLeft = (val / size.containerWidth)*100;
+            // (val / size.boxWidth)*100 > (100 - self.barWidth) ? (100 - self.barWidth) : (val / size.boxWidth)*100;
         },
+        // 改变dom，拉伸窗体或加载内容，dom发生变化
         changeWinSize(){
-            var size = this.getSize();
-            var boxPoint = this.$refs.box.getBoundingClientRect();//container的极坐标
+            let size = this.getSize();
+            let boxPoint = this.$refs.box.getBoundingClientRect();// container的极坐标
             // 保存极坐标
             this.boxPoint.minX = boxPoint.left;
             this.boxPoint.maxX = boxPoint.right;
@@ -301,7 +292,7 @@ export default {
         });  
     },
     beforeDestroy () {//vue children' of undefined ref 因为还在监听不再这个页面的时候
-      window.removeEventListener('resize', this.changeWinSize);
+        window.removeEventListener('resize', this.changeWinSize);
     }
 }
 </script>
@@ -309,8 +300,8 @@ export default {
 <style scoped>
 .scrollbar_box{overflow: hidden; position: relative; height: 100%; width: 100%;}
 .scrollbar_container{overflow: visible;}
-.scrollbar_verticalBtn{position: absolute; top: 0; right: 0; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
-.scrollbar_horizontalBtn{position: absolute; bottom: 0; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
+.scrollbar_verticalBtn{position: absolute; top: 0; right: 2px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
+.scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
 .scrollbar_box:hover .scrollbar_verticalBtn,.scrollbar_box:hover .scrollbar_horizontalBtn{background-color: rgb(153, 153, 153)}
 </style>
 

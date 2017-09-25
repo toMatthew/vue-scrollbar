@@ -2,7 +2,7 @@
   <div id="app">
     <div id="box">
       <scrollbar>
-        <div>
+        <div id="container">
             <img src="./assets/logo.png">
             <p>wecome to me github</p>
             <p><a href="https://github.com/toMatthew/vue-scrollbar">https://github.com/toMatthew/vue-scrollbar</a></p>
@@ -74,5 +74,8 @@ export default {
   height: 500px;
   border:1px solid #eee;
   border-radius: 3px;
+}
+#container{
+  width: 400px;
 }
 </style>
