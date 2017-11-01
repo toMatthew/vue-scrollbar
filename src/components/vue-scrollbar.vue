@@ -5,6 +5,7 @@ e.g
 <div><scrollbar></scrollbar></div>
 author https://github.com/toMatthew/vue-scrollbar
 v2 算法更新换骨
+v3 增加了自定义偏移量
 -->
 <template>
 <div class="scrollbar_box" @wheel="scroll" ref="box">
@@ -41,40 +42,42 @@ export default {
                 maxX:0,
                 minY:0,
                 maxY:0,
-            }
+            },
+            istime : true,//优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题
         }
     },
     props:{
-        // containerStyle : Object,
         speed: {
             type: Number,
             default: 53
         },
-        //上下偏移量 %
-        topChange : {
+        //上下偏移量 px
+        changeTop : {
             type : Number,
-            default: 0
+            default: null
         },
-        //左右偏移量 %
-        leftChange : {
+        //左右偏移量 xp
+        changeLeft : {
             type : Number,
-            default: 0
+            default: null
         },
-        styles : {
-            type : Number,
-            default : 2,
+    },
+    watch: {
+        // 当外面传这个发送变化时就让到这个位置
+        changeTop() {  
+            if(this.top == this.changeTop) return false;
+            let size = this.getSize();
+            this.top = this.changeTop;
+            this.barTop = (( this.top * 100 ) / size.containerHeight).toFixed(2) * 1;
         },
-        /*
-            设置2种模式
-            1、内容改变时将top设为0
-            2、内容改变通过计算如果e.g
-                    原来高100，top为50%--> 变为搞200 --> top就应该是25%
-        */
+        changeLeft() { 
+            if(this.left == this.changeLeft) return false;
+            let size = this.getSize();
+            this.left = this.changeLeft;
+            this.barLeft = (( this.left * 100 ) / size.containerWidth).toFixed(2) * 1;
+        },
     },
     computed:{//计算属性的结果会被缓存，除非依赖的响应式属性变化才会重新计算。
-
-    },
-    watch:{
 
     },
     methods:{
@@ -166,8 +169,8 @@ export default {
             let box = this.$refs.box;
             let size = {
                 // 滚动内容的高度宽度
-                containerHeight: container.children[0].clientHeight,
-                containerWidth: container.children[0].clientWidth,
+                containerHeight: container.clientHeight,
+                containerWidth: container.clientWidth,
                 // 最外面盒子的高度宽度
                 boxHeight: box.clientHeight,
                 boxWidth: box.clientWidth,
@@ -179,14 +182,14 @@ export default {
         setVerticalClick(val) {
             let size = this.getSize();
             let barTop = ((val - this.boxPoint.minY)  / this.$refs.box.clientHeight ) *100;
-            if(barTop < 0) {
+            if(barTop <= 0) {
                 barTop = 0;
                 if(this.barTop == barTop) {
                     return false;
                 }
                 this.$emit('top');
             }
-            if(barTop + this.barHeight > 100) {
+            if(barTop + this.barHeight >= 100) {
                 barTop = 100 - this.barHeight;
                 if(this.barTop == barTop) {
                     return false;
@@ -195,19 +198,20 @@ export default {
             }
             this.barTop = barTop.toFixed(2); // 这里是百分比的需要转换
             this.top = ((barTop / 100) * size.containerHeight).toFixed(2) * 1;
+            this.$emit('update:changeTop', this.top);
         },
         // val是偏移量 滚动的 
         setVerticalScroll(val){
             let size = this.getSize();
             let topEnd = size.containerHeight - size.boxHeight;
-            if(val > topEnd){
+            if(val >= topEnd){
                 val = topEnd;
                 if(this.top == val) {// 已经到底部就不用继续执行了
                     return false;
                 }
                 this.$emit('bottom');
             };
-            if(val < 0) {
+            if(val <= 0) {
                 val = 0;
                 if(this.top == val) {// 已经到顶部就不用继续执行了
                     return false;
@@ -215,6 +219,7 @@ export default {
                 this.$emit('top');
             }
             this.top = val;
+            this.$emit('update:changeTop', this.top);
             // 导航条的top的计算 
             this.barTop = (val / size.containerHeight)*100;
             // (val / size.boxHeight)*100 > (100 - self.barHeight) ? (100 - self.barHeight) : (val / size.boxHeight)*100;
@@ -222,14 +227,14 @@ export default {
         setHorizontalClick(val) {
             let size = this.getSize();
             let barLeft = ((val - this.boxPoint.minX)  / this.$refs.box.clientWidth ) *100;
-            if(barLeft < 0) {
+            if(barLeft <= 0) {
                 barLeft = 0;
                 if(this.barLeft == barLeft) {
                     return false;
                 }
                 this.$emit('left');
             }
-            if(barLeft + this.barWidth > 100) {
+            if(barLeft + this.barWidth >= 100) {
                 barLeft = 100 - this.barWidth;
                 if(this.barLeft == barLeft) {
                     return false;
@@ -239,57 +244,68 @@ export default {
             this.barLeft = barLeft.toFixed(2); 
             // 这里是百分比的需要转换
             this.left = ((barLeft / 100) * size.containerWidth).toFixed(2) * 1;
+            this.$emit('update:changeLeft', this.left);
         },
         setHorizontalScroll(val){
             let size = this.getSize();
             let leftEnd = size.containerWidth - size.boxWidth;
-            if(val > leftEnd){
+            if(val >= leftEnd){
                 this.$emit('right');
                 val = leftEnd;
             };
-            if(val < 0) {
+            if(val <= 0) {
                 this.$emit('left');
                 val = 0;
             }
             this.left = val;
+            this.$emit('update:changeLeft', this.left);
             this.barLeft = (val / size.containerWidth)*100;
             // (val / size.boxWidth)*100 > (100 - self.barWidth) ? (100 - self.barWidth) : (val / size.boxWidth)*100;
         },
         // 改变dom，拉伸窗体或加载内容，dom发生变化
         changeWinSize(){
-            let size = this.getSize();
-            let boxPoint = this.$refs.box.getBoundingClientRect();// container的极坐标
-            // 保存极坐标
-            this.boxPoint.minX = boxPoint.left;
-            this.boxPoint.maxX = boxPoint.right;
-            this.boxPoint.minY = boxPoint.top;
-            this.boxPoint.maxY = boxPoint.bottom;
-            // 计算拖拽条的宽高
-            this.barHeight = (size.boxHeight / size.containerHeight) * 100;
-            this.barWidth = (size.boxWidth / size.containerWidth) * 100;
-            // 是否显示拖拽条
-            this.isVerticalBtn = (this.barHeight >= 100 && !!this.barHeight)  ? false : true;
-            this.isHorizontalBtn = (this.barWidth >= 100 && !!this.barWidth) ? false : true;
-            if(!this.isVerticalBtn) {
-                this.top = 0;
-                this.barTop = 0;
-            } 
-            if(!this.isHorizontalBtn) {
-                this.left = 0;
-                this.barLeft = 0;
+            if(this.istime) {//优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题
+                this.istime = false;
+
+                let size = this.getSize();
+                let boxPoint = this.$refs.box.getBoundingClientRect();// container的极坐标
+
+                // 保存极坐标
+                this.boxPoint.minX = boxPoint.left;
+                this.boxPoint.maxX = boxPoint.right;
+                this.boxPoint.minY = boxPoint.top;
+                this.boxPoint.maxY = boxPoint.bottom;
+                // 计算拖拽条的宽高
+                this.barHeight = (size.boxHeight / size.containerHeight) * 100;
+                this.barWidth = (size.boxWidth / size.containerWidth) * 100;
+                // 是否显示拖拽条
+                this.isVerticalBtn = (this.barHeight >= 100 && !!this.barHeight)  ? false : true;
+                this.isHorizontalBtn = (this.barWidth >= 100 && !!this.barWidth) ? false : true;
+                if(!this.isVerticalBtn) {
+                    this.top = 0;
+                    this.barTop = 0;
+                } 
+                if(!this.isHorizontalBtn) {
+                    this.left = 0;
+                    this.barLeft = 0;
+                }
+
+                this.istime = true; 
             }
         }
     },
     mounted () {
-        this.changeWinSize();
-        window.addEventListener('resize', this.changeWinSize);
+        this.$nextTick(()=>{
+            this.changeWinSize();
+            window.addEventListener('resize', this.changeWinSize);
+        });
     },
     updated () {//由于数据更改导致的虚拟 DOM 重新渲染和打补丁，在这之后会调用该钩子
-        this.$nextTick(() => {
-        // setTimeout(()=>{//防止某些动画影响如el-collapse-transition
-            this.changeWinSize();      
-        // },150);  
-        });  
+        this.$nextTick(()=>{
+            setTimeout(()=>{//防止某些动画影响如el-collapse-transition
+                this.changeWinSize();      
+            },150);  
+        });
     },
     beforeDestroy () {//vue children' of undefined ref 因为还在监听不再这个页面的时候
         window.removeEventListener('resize', this.changeWinSize);
@@ -299,7 +315,7 @@ export default {
 
 <style scoped>
 .scrollbar_box{overflow: hidden; position: relative; height: 100%; width: 100%;}
-.scrollbar_container{overflow: visible;}
+.scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%;}
 .scrollbar_verticalBtn{position: absolute; top: 0; right: 2px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
 .scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
 .scrollbar_box:hover .scrollbar_verticalBtn,.scrollbar_box:hover .scrollbar_horizontalBtn{background-color: rgb(153, 153, 153)}
