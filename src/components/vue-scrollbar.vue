@@ -6,6 +6,7 @@ e.g
 author https://github.com/toMatthew/vue-scrollbar
 v2 算法更新换骨
 v3 增加了自定义偏移量
+v4 增加因子元素有动画音响了他的计算，增加参数timeout，时间结束在执行changesize
 -->
 <template>
 <div class="scrollbar_box" @wheel="scroll" ref="box">
@@ -60,6 +61,10 @@ export default {
         changeLeft : {
             type : Number,
             default: null
+        },
+        timeOut : {//延时调用changeWinSize
+            type : Number,
+            default: 0
         },
     },
     watch: {
@@ -289,7 +294,6 @@ export default {
                     this.left = 0;
                     this.barLeft = 0;
                 }
-
                 this.istime = true; 
             }
         }
@@ -302,9 +306,13 @@ export default {
     },
     updated () {//由于数据更改导致的虚拟 DOM 重新渲染和打补丁，在这之后会调用该钩子
         this.$nextTick(()=>{
-            setTimeout(()=>{//防止某些动画影响如el-collapse-transition
-                this.changeWinSize();      
-            },150);  
+            if(this.timeOut != 0) {//防止某些动画影响如el-collapse-transition
+                setTimeout(()=>{
+                    this.changeWinSize();  
+                }, this.timeOut); 
+            } else {
+                this.changeWinSize();    
+            }
         });
     },
     beforeDestroy () {//vue children' of undefined ref 因为还在监听不再这个页面的时候
@@ -316,8 +324,7 @@ export default {
 <style scoped>
 .scrollbar_box{overflow: hidden; position: relative; height: 100%; width: 100%;}
 .scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%;}
-.scrollbar_verticalBtn{position: absolute; top: 0; right: 2px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
+.scrollbar_verticalBtn{position: absolute; top: 0; right: 1px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
 .scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
 .scrollbar_box:hover .scrollbar_verticalBtn,.scrollbar_box:hover .scrollbar_horizontalBtn{background-color: rgb(153, 153, 153)}
 </style>
-

@@ -31,17 +31,18 @@ Vue.component('my-component', {
 
 ## Props 
 
-| Props         | tip                                                                  |
-|---------------|----------------------------------------------------------------------|
-| changeTop     | change scroll bar position about top (双向绑定顶部的偏移量)          |
-| changeLeft    | change scroll bar position about letf (双向绑定左侧部的偏移量)       |
+| Props         |Tpye       | Default  |Description                                                                                           |
+|---------------|-----------|----------|------------------------------------------------------------------------------------------------------|
+| changeTop     | Number    | Null     |change scroll bar position about top (双向绑定顶部的偏移量)        								      |
+| changeLeft    | Number    | Null     | change scroll bar position about letf (双向绑定左侧部的偏移量)                                       |
+| timeOut       | Number    | 0        | Animation time for subcomponents (如果该组件内有动画会影响这个组件的功能，所有请传入该动画的结束)    |
 
 
 ## Usage
   
 ``` html
 <div>
-    <scrollbar @top="top" @bottom="bottom" @left="left" @right="right" :changeTop.sync="changeTop" :changeLeft.sync="changeLeft">HTML(滚动的内容)</scrollbar>
+    <scrollbar @top="top" @bottom="bottom" @left="left" @right="right" :istime="istime" :changeTop.sync="changeTop" :changeLeft.sync="changeLeft">HTML(滚动的内容)</scrollbar>
 <div>
 ```
   
