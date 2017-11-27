@@ -7,6 +7,7 @@ author https://github.com/toMatthew/vue-scrollbar
 v2 算法更新换骨
 v3 增加了自定义偏移量
 v4 增加因子元素有动画音响了他的计算，增加参数timeout，时间结束在执行changesize
+v5 用css开启硬件加速(未测试对比并不知道有什么差异，不知道有没有这个必要先加上去test，是否会过度占用浏览器内存)
 -->
 <template>
 <div class="scrollbar_box" @wheel="scroll" ref="box">
@@ -322,7 +323,16 @@ export default {
 </script>
 
 <style scoped>
-.scrollbar_box{overflow: hidden; position: relative; height: 100%; width: 100%;}
+.scrollbar_box{
+    overflow: hidden; position: relative; height: 100%; width: 100%;
+    /*css 硬件加速*/
+    transform: translateZ(0);
+    /*修复使用CSS transforms 或者 animations时可能会有页面闪烁的效果*/
+    /*隐藏被旋转的 div 元素的背面*/
+    backface-visibility: hidden;
+    perspective: 1000;
+    transform: translate3d(0, 0, 0);
+}
 .scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%;}
 .scrollbar_verticalBtn{position: absolute; top: 0; right: 1px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
 .scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}

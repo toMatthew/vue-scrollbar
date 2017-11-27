@@ -6,42 +6,7 @@
             <img src="./assets/logo.png">
             <p>wecome to me github</p>
             <p><a href="https://github.com/toMatthew/vue-scrollbar">https://github.com/toMatthew/vue-scrollbar</a></p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
-            <p>vue自定义滚动条</p>
+            <p v-for="n in 40">vue自定义滚动条---{{n}}</p>
         </div>
       </scrollbar>
     </div>
