@@ -53,6 +53,6 @@ Vue.component('my-component', {
 | Event         | Output     | Description                                                            |
 |---------------|------------|------------------------------------------------------------------------|
 | top           | Function   | When the scroll bar is on the topmost side (当滚动条到顶部时的回调)    |
-| bottom        | Function   | When the scroll bar is on the bottommost side (当滚动条到顶部时的回调) |
-| left          | Function   | When the scroll bar is on the leftmost side (当滚动条到顶部时的回调)   |
-| right         | Function   | When the scroll bar is on the rightmost side (当滚动条到顶部时的回调)  |
+| bottom        | Function   | When the scroll bar is on the bottommost side (当滚动条到底部时的回调) |
+| left          | Function   | When the scroll bar is on the leftmost side (当滚动条到最左边时的回调)   |
+| right         | Function   | When the scroll bar is on the rightmost side (当滚动条到最右边时的回调)  |
