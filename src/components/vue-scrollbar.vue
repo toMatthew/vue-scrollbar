@@ -7,7 +7,11 @@ author https://github.com/toMatthew/vue-scrollbar
 v2 算法更新换骨
 v3 增加了自定义偏移量
 v4 增加因子元素有动画音响了他的计算，增加参数timeout，时间结束在执行changesize
-v5 用css开启硬件加速(未测试对比并不知道有什么差异，不知道有没有这个必要先加上去test，是否会过度占用浏览器内存)
+v5 用css开启硬件加速(未测试对比并不知道有什么差异，不知道有没有这个必要先加上去test，是否会过度占用浏览器内存)  //重绘和回流性能规避
+
+bug
+    1.鼠标拖到边界不动会一直触发回调
+    2.container width 取值不正确 该成display: inline-block; ok
 -->
 <template>
 <div class="scrollbar_box" @wheel="scroll" ref="box">
@@ -23,7 +27,7 @@ v5 用css开启硬件加速(未测试对比并不知道有什么差异，不知�
 
 <script>
 export default {
-    data: function () {
+    data () {
         return {
             top : 0, 
             left : 0, 
@@ -46,6 +50,9 @@ export default {
                 maxY:0,
             },
             istime : true,//优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题
+            isrun : false,//是否在运行 优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题 节流函数
+            throttleTime : 400,//节流函数定时器时间
+            // 通知回调定位防止重复触发
         }
     },
     props:{
@@ -181,7 +188,6 @@ export default {
                 boxHeight: box.clientHeight,
                 boxWidth: box.clientWidth,
             }
-            
             return size;
         },
         // 点击拖拽设置
@@ -270,39 +276,45 @@ export default {
         },
         // 改变dom，拉伸窗体或加载内容，dom发生变化
         changeWinSize(){
-            if(this.istime) {//优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题
-                this.istime = false;
+            let size = this.getSize();
+            let boxPoint = this.$refs.box.getBoundingClientRect();// container的极坐标
 
-                let size = this.getSize();
-                let boxPoint = this.$refs.box.getBoundingClientRect();// container的极坐标
-
-                // 保存极坐标
-                this.boxPoint.minX = boxPoint.left;
-                this.boxPoint.maxX = boxPoint.right;
-                this.boxPoint.minY = boxPoint.top;
-                this.boxPoint.maxY = boxPoint.bottom;
-                // 计算拖拽条的宽高
-                this.barHeight = (size.boxHeight / size.containerHeight) * 100;
-                this.barWidth = (size.boxWidth / size.containerWidth) * 100;
-                // 是否显示拖拽条
-                this.isVerticalBtn = (this.barHeight >= 100 && !!this.barHeight)  ? false : true;
-                this.isHorizontalBtn = (this.barWidth >= 100 && !!this.barWidth) ? false : true;
-                if(!this.isVerticalBtn) {
-                    this.top = 0;
-                    this.barTop = 0;
-                } 
-                if(!this.isHorizontalBtn) {
-                    this.left = 0;
-                    this.barLeft = 0;
-                }
-                this.istime = true; 
+            // 保存极坐标
+            this.boxPoint.minX = boxPoint.left;
+            this.boxPoint.maxX = boxPoint.right;
+            this.boxPoint.minY = boxPoint.top;
+            this.boxPoint.maxY = boxPoint.bottom;
+            // 计算拖拽条的宽高
+            this.barHeight = (size.boxHeight / size.containerHeight) * 100;
+            this.barWidth = (size.boxWidth / size.containerWidth) * 100;
+            // 是否显示拖拽条
+            this.isVerticalBtn = (this.barHeight >= 100 && !!this.barHeight)  ? false : true;
+            this.isHorizontalBtn = (this.barWidth >= 100 && !!this.barWidth) ? false : true;
+            if(!this.isVerticalBtn) {
+                this.top = 0;
+                this.barTop = 0;
+            } 
+            if(!this.isHorizontalBtn) {
+                this.left = 0;
+                this.barLeft = 0;
             }
-        }
+        },
+        // 函数节流
+        throttle () {
+            if(this.isrun) {
+                return;
+            }
+            this.isrun = true;
+            setTimeout(()=>{
+                this.isrun = false;
+                this.changeWinSize(); 
+            }, this.throttleTime);
+        },
     },
     mounted () {
         this.$nextTick(()=>{
-            this.changeWinSize();
-            window.addEventListener('resize', this.changeWinSize);
+            this.throttle();
+            window.addEventListener('resize', this.throttle);
         });
     },
     updated () {//由于数据更改导致的虚拟 DOM 重新渲染和打补丁，在这之后会调用该钩子
@@ -317,7 +329,7 @@ export default {
         });
     },
     beforeDestroy () {//vue children' of undefined ref 因为还在监听不再这个页面的时候
-        window.removeEventListener('resize', this.changeWinSize);
+        window.removeEventListener('resize', this.throttle);
     }
 }
 </script>
@@ -333,7 +345,7 @@ export default {
     perspective: 1000;
     transform: translate3d(0, 0, 0);
 }
-.scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%;}
+.scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%; display: inline-block;}
 .scrollbar_verticalBtn{position: absolute; top: 0; right: 1px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
 .scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
 .scrollbar_box:hover .scrollbar_verticalBtn,.scrollbar_box:hover .scrollbar_horizontalBtn{background-color: rgb(153, 153, 153)}
