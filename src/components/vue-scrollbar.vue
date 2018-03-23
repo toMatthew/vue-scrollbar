@@ -49,7 +49,6 @@ export default {
                 minY:0,
                 maxY:0,
             },
-            istime : true,//优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题
             isrun : false,//是否在运行 优化 因为 频繁 触发 resize 函数，导致页面很卡的 问题 节流函数
             throttleTime : 400,//节流函数定时器时间
             // 通知回调定位防止重复触发
