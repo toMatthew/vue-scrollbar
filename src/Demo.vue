@@ -31,24 +31,24 @@ export default {
   },
   methods:{
     bottom() {
-      console.log('bottom')
-      this.isloading = true;
-      var newdata = [
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-          '我是新加的数据',
-      ];
-      setTimeout(()=>{
-        this.data = this.data.concat(newdata);
-        this.isloading = false;
-      }, 1000);
+      // console.log('bottom')
+      // this.isloading = true;
+      // var newdata = [
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      //     '我是新加的数据',
+      // ];
+      // setTimeout(()=>{
+      //   this.data = this.data.concat(newdata);
+      //   this.isloading = false;
+      // }, 1000);
     }
   },
 }
