@@ -10,8 +10,11 @@ v4 增加因子元素有动画音响了他的计算，增加参数timeout，时�
 v5 用css开启硬件加速(未测试对比并不知道有什么差异，不知道有没有这个必要先加上去test，是否会过度占用浏览器内存)  //重绘和回流性能规避
 
 bug
-    1.鼠标拖到边界不动会一直触发回调
-    2.container width 取值不正确 该成display: inline-block; OK
+    1.鼠标拖到边界不动会一直触发回调 ok
+    2.container width 取值不正确 该成display: inline-block; or scrollHeight  OK
+    3.初始设置changeLeft无效
+
+20180326 测试了一下callback，以及changeLeft，changeTop 修改不少的问题
 -->
 <template>
 <div class="scrollbar_box" @wheel="scroll" ref="box">
@@ -64,12 +67,12 @@ export default {
         //上下偏移量 px
         changeTop : {
             type : Number,
-            default: null
+            default: 0
         },
         //左右偏移量 xp
         changeLeft : {
             type : Number,
-            default: null
+            default: 0
         },
         timeOut : {//延时调用changeWinSize
             type : Number,
@@ -79,24 +82,49 @@ export default {
     watch: {
         // 当外面传这个发送变化时就让到这个位置
         changeTop() {  
-            if(this.top == this.changeTop) return false;
-            let size = this.getSize();
-            this.top = this.changeTop;
-            this.barTop = (( this.top * 100 ) / size.containerHeight) * 1;
+            this.setbarTop();
         },
-        changeLeft() { 
-            if(this.left == this.changeLeft) return false;
-            let size = this.getSize();
-            this.left = this.changeLeft;
-            this.barLeft = (( this.left * 100 ) / size.containerWidth) * 1;
+        changeLeft() {   
+            this.setbarLeft();
         },
     },
     computed:{//计算属性的结果会被缓存，除非依赖的响应式属性变化才会重新计算。
 
     },
     methods:{
+        // 初始化
+        getPropData () {
+            this.setbarLeft();
+            this.setbarTop();
+        },
+        setbarTop() {
+            if(this.top == this.changeTop) return false;
+            let size = this.getSize();
+            let topEnd = size.containerHeight - size.boxHeight;
+            if(this.changeTop < 0) {
+                this.top = 0;
+            } else if(this.changeTop >= topEnd) {
+                this.top = topEnd;
+            } else {
+                this.top = this.changeTop;
+            }            
+            this.barTop = (( this.top * 100 ) / size.containerHeight) * 1;
+        },
+        setbarLeft() {
+            if(this.left == this.changeLeft) return false;
+            let size = this.getSize();
+            let leftEnd = size.containerWidth - size.boxWidth;
+            if(this.changeLeft < 0) {
+                this.left = 0;
+            } else if(this.changeLeft >= leftEnd) {
+                this.left = leftEnd;
+            } else {
+                this.left = this.changeLeft;
+            }            
+            this.barLeft = (( this.left * 100 ) / size.containerWidth) * 1;
+        },
         // 滚动
-       scroll(e){
+        scroll(e){
             if(this.isVerticalBtn  || this.isHorizontalBtn) {
                 e.preventDefault();
                 e.stopPropagation();
@@ -183,8 +211,8 @@ export default {
             let _box = this.$refs.box;
             let size = {
                 // 滚动内容的高度宽度
-                containerHeight: _container.clientHeight,
-                containerWidth: _container.clientWidth,
+                containerHeight: _container.scrollHeight,
+                containerWidth: _container.scrollWidth,
                 // 最外面盒子的高度宽度
                 boxHeight: _box.clientHeight,
                 boxWidth: _box.clientWidth,
@@ -209,7 +237,7 @@ export default {
                 }
                 this.$emit('bottom');
             }
-            this.barTop = barTop.toFixed(2); // 这里是百分比的需要转换
+            this.barTop = barTop; // 这里是百分比的需要转换
             this.top = ((barTop / 100) * size.containerHeight).toFixed(2) * 1;
             this.$emit('update:changeTop', this.top);
         },
@@ -254,7 +282,7 @@ export default {
                 }
                 this.$emit('right');
             }
-            this.barLeft = barLeft.toFixed(2); 
+            this.barLeft = barLeft; 
             // 这里是百分比的需要转换
             this.left = ((barLeft / 100) * size.containerWidth).toFixed(2) * 1;
             this.$emit('update:changeLeft', this.left);
@@ -263,12 +291,19 @@ export default {
             let size = this.getSize();
             let leftEnd = size.containerWidth - size.boxWidth;
             if(val >= leftEnd){
-                this.$emit('right');
                 val = leftEnd;
+                if(this.left == val) {
+                    return false;
+                }
+                this.$emit('right');
+                
             };
             if(val <= 0) {
-                this.$emit('left');
                 val = 0;
+                if(this.left == val) {
+                    return false;
+                }
+                this.$emit('left');
             }
             this.left = val;
             this.$emit('update:changeLeft', this.left);
@@ -314,8 +349,10 @@ export default {
     },
     mounted () {
         this.$nextTick(()=>{
+            this.getPropData();
             this.throttle();
             window.addEventListener('resize', this.throttle);
+
         });
     },
     updated () {//由于数据更改导致的虚拟 DOM 重新渲染和打补丁，在这之后会调用该钩子
@@ -348,7 +385,7 @@ export default {
 }
 /*  position: absolute; 不在文档流减少重排 */
 .scrollbar_container{overflow: visible; min-width: 100%; min-height: 100%; display: inline-block; position: absolute;  top: 0; left: 0;}
-.scrollbar_verticalBtn{position: absolute; top: 0; right: 1px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer;}
-.scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer;}
-.scrollbar_box:hover .scrollbar_verticalBtn,.scrollbar_box:hover .scrollbar_horizontalBtn{background-color: rgb(153, 153, 153)}
+.scrollbar_verticalBtn{position: absolute; top: 0; right: 1px; width: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .3); cursor: pointer; z-index: 50;}
+.scrollbar_horizontalBtn{position: absolute; bottom: 2px; left: 0; height: 6px; border-radius: 6px; background-color: rgba(153, 153, 153, .5); cursor: pointer; z-index: 50;}
+.scrollbar_verticalBtn:hover,.scrollbar_horizontalBtn:hover{background-color: rgb(153, 153, 153); z-index: 51;}
 </style>

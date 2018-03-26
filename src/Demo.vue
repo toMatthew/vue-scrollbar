@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div id="box">
-      <scrollbar @bottom="bottom">
+      <scrollbar @bottom="bottom" @top="top" @left="left" @right="right" :changeLeft.sync="changeLeft" :changeTop.sync="changeTop">
         <div id="container">
             <img src="./assets/logo.png">
             <p>wecome to me github</p>
@@ -27,28 +27,39 @@ export default {
     return {
         data:[],
         isloading : false,
+        changeLeft : 50,
+        changeTop : 100,
     }
   },
   methods:{
+    top() {
+      console.log('top');
+    },
     bottom() {
-      // console.log('bottom')
-      // this.isloading = true;
-      // var newdata = [
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      //     '我是新加的数据',
-      // ];
-      // setTimeout(()=>{
-      //   this.data = this.data.concat(newdata);
-      //   this.isloading = false;
-      // }, 1000);
+      console.log('bottom')
+      this.isloading = true;
+      var newdata = [
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+          '我是新加的数据',
+      ];
+      setTimeout(()=>{
+        this.data = this.data.concat(newdata);
+        this.isloading = false;
+      }, 1000);
+    },
+    left() {
+      console.log('left')
+    },
+    right() {
+      console.log('right')
     }
   },
 }
@@ -72,7 +83,7 @@ export default {
   position: relative;
 }
 #container{
-  width: 600px;
+  width: 400px;
 }
 #loadingbox{
   width: 100%;
